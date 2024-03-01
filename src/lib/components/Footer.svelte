@@ -38,7 +38,7 @@
 	<p>
 		Hosted on <a href="https://pages.cloudflare.com" target="_blank" rel="noreferrer">Cloudflare</a
 	>, domain from
-		<a href="https://dashserv.io/a/modcolltool" target="_blank" rel="noreferrer">dashserv</a>.
+		<a href="https://dashserv.io/a/modcollhelper" target="_blank" rel="noreferrer">dashserv</a>.
 	</p>
 	<p>
 		Brand design by <a

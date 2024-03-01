@@ -1,5 +1,5 @@
 <script lang="ts">
-	let accessToken = 'mrp_p7oNSR9g7N1pnxyRSo43BctY5fbGPa6rA99dnJf2NOET2r2AfpYWDtW5lEJm';
+	let accessToken = '[REDACTED]';
 	let id = 'vy2qGPHL';
 	let collections: any[];
 	let selectedCollection: string;
@@ -91,7 +91,7 @@
 					</div>
 					<div class="logos">
 					{#each mods as mod}
-						<img alt="Logo of {mod.title}" src={mod.icon_url} class="modIcon">
+						<img title="{mod.title}" alt="Logo of {mod.title}" src={mod.icon_url} class="modIcon">
 					{/each}
 					</div>
 				</div>
@@ -143,6 +143,7 @@
 				display: grid;
 				grid-template-columns: 1fr 4fr 2fr;
 				align-items: center;
+				gap: 1vw;
 
 				.bar {
 					height: 1em;
@@ -175,7 +176,7 @@
 				p {
 					text-align: right;
 					white-space: nowrap;
-					margin: 0.5em;
+					margin: 0.5em 0;
 				}
 			}
 		}
