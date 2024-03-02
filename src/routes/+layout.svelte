@@ -1,17 +1,11 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { page } from '$app/stores';
 	import Footer from '$lib/components/Footer.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import ArbeeLogo from "$lib/img/2022-01_ARBEE_Bild-Marke_rgb_Verlauf_01.png"
+	import ArbeeLogo from '$lib/img/2022-01_ARBEE_Bild-Marke_rgb_Verlauf_01.png';
+	import { page } from '$app/stores';
+	import User from '$lib/components/User.svelte';
 
-	if (browser) {
-		if ($page.url.searchParams.get('do') == 'abarrelroll') {
-			setTimeout(() => {
-				document.body.classList.add('roll');
-			}, 1000);
-		}
-	}
+	let user: any = $page.data.user;
 </script>
 
 <svelte:head>
@@ -35,9 +29,10 @@
 </svelte:head>
 
 <main>
-	<Header/>
+	<Header />
+	<User {user} />
 	<slot />
-	<Footer/>
+	<Footer />
 </main>
 
 <style>
@@ -61,7 +56,7 @@
 	}
 
 	:global(*)::-webkit-scrollbar:hover {
-		 background-color: transparent;
+		background-color: transparent;
 	}
 
 	:global(html) {
@@ -82,10 +77,6 @@
 
 	:global(.hide) {
 		opacity: 0;
-	}
-
-	:global(.roll) {
-		rotate: 360deg;
 	}
 
 	:global(.card) {
