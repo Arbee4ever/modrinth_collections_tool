@@ -15,7 +15,7 @@
 
 <div id="user">
 	{#if user}
-		<DetailsDropdown icon={pfp} height="4vh" border_radius="100%">
+		<DetailsDropdown icon={pfp} height="5vh" border_radius="100%">
 			<span class="wrapper">
 				<h1>{user.username}</h1>
 				<a href="/api/signout" data-sveltekit-preload-data="off" class="signout">Sign out </a>
