@@ -52,17 +52,21 @@
 
 			if (projectReq.status == 200) {
 				let proj = await projectReq.json();
-				for (const version of proj.game_versions) {
-					if (sortedData[version] != undefined) {
-						if (sortedData[version].indexOf(proj) == -1) {
-							sortedData[version].push(proj);
+				for (const projVersion of proj.game_versions) {
+					let versionEl = sortedData.find(({version}) => version === projVersion);
+					if (versionEl !== undefined) {
+						if (versionEl.mods.indexOf(proj) == -1) {
+							versionEl.mods.push(proj);
 						}
+						sortedData = sortedData;
 					} else {
-						sortedData[version] = [proj];
+						sortedData.push({"version": projVersion, "mods": [proj]});
+						sortedData = sortedData.sort((a, b) => {
+							return a.version.localeCompare(b.version, undefined, { numeric: true, sensitivity: 'base' });
+						});
 					}
 				}
 			}
-			sortedData = sortedData;
 			progressCounter = i + 1;
 		}
 	}
@@ -95,9 +99,9 @@
 	{#if projects}
 		<progress max={projects.length} value={progressCounter}></progress>
 	{/if}
-	{#if Object.entries(sortedData).length !== 0}
+	{#if sortedData.length !== 0}
 		<div class="list card">
-			{#each Object.entries(sortedData) as [version, mods] (version)}
+			{#each sortedData as {version, mods} (version)}
 				<button class="item" on:click={() => selectVersion({version})} on:keyup={() => selectVersion({version})}>
 					<p>{version}</p>
 					<span class="bar" style="--percent: {(mods.length/projects.length)*100}%">
@@ -131,13 +135,13 @@
 
 <dialog class="card" bind:this={modal}>
 	{selectedVersion}
-	{#if selectedVersion !== undefined}
-		{#each Object.entries(sortedData[selectedVersion]) as [id, mod]}
+	{#if selectedVersion !== undefined && sortedData.length !== 0}
+		{#each sortedData.find(({version}) => version === selectedVersion).mods as mod, i}
 			<div class="listItem">
 				{#if mod.icon_url !== null}
 					<img alt="Logo of {mod.name}" src={mod.icon_url} class="modIcon">
 				{/if}
-				<p>{id + 1}: {mod.name}</p>
+				<p>{i + 1}: {mod.name}</p>
 			</div>
 		{/each}
 	{/if}
