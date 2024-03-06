@@ -9,7 +9,6 @@
 	let selectedCollection: string;
 	let projects: any[];
 	let sortedData: any[] = [];
-	let sortedData2: any[] = [];
 	let selectedVersion: string;
 	let modal: HTMLDialogElement;
 	let progressCounter = 0;
@@ -20,7 +19,7 @@
 	});
 
 	async function getCollections() {
-		if(user == null) return;
+		if (user == null) return;
 		collections = [];
 		console.log('Loading Collections...');
 		let req = await fetch(`https://api.modrinth.com/v3/user/${user.id}/collections`, {
@@ -43,14 +42,14 @@
 		})[0].projects;
 		for (let i = 0; i < projects.length; i++) {
 			console.log('Processing Project ' + (i + 1));
-			progressCounter = i + 1;
-			let projectReq = await fetch(`https://api.modrinth.com/v2/project/${projects[i]}`, {
+			let projectReq = await fetch(`https://api.modrinth.com/v3/project/${projects[i]}`, {
 				headers: {
 					'Content-Type': 'application/json',
 					'User-Agent': 'https://github.com/Arbee4ever/arbeeco.de (arbeeco.de)',
 					'Authorization': token
 				}
 			});
+
 			if (projectReq.status == 200) {
 				let proj = await projectReq.json();
 				for (const version of proj.game_versions) {
@@ -63,7 +62,8 @@
 					}
 				}
 			}
-			sortedData2 = Object.entries(sortedData).sort((a, b) => a[1].length - b[1].length);
+			sortedData = sortedData;
+			progressCounter = i + 1;
 		}
 	}
 
@@ -93,11 +93,11 @@
 		{/if}
 	</div>
 	{#if projects}
-		<progress max={projects.length} value={progressCounter}>70%</progress>
+		<progress max={projects.length} value={progressCounter}></progress>
 	{/if}
-	{#if sortedData2.length !== 0}
+	{#if Object.entries(sortedData).length !== 0}
 		<div class="list card">
-			{#each sortedData2 as [version, mods] (version)}
+			{#each Object.entries(sortedData) as [version, mods] (version)}
 				<button class="item" on:click={() => selectVersion({version})} on:keyup={() => selectVersion({version})}>
 					<p>{version}</p>
 					<span class="bar" style="--percent: {(mods.length/projects.length)*100}%">
@@ -107,7 +107,9 @@
 					</span>
 					<span class="logos">
 						{#each mods as mod}
-							<img title="{mod.title}" alt="Logo of {mod.title}" src={mod.icon_url} class="modIcon">
+							{#if mod.icon_url !== null}
+								<img title="{mod.name}" alt="Logo of {mod.name}" src={mod.icon_url} class="modIcon">
+							{/if}
 						{/each}
 					</span>
 				</button>
@@ -130,10 +132,12 @@
 <dialog class="card" bind:this={modal}>
 	{selectedVersion}
 	{#if selectedVersion !== undefined}
-		{#each Object.values(Object.fromEntries(sortedData2)[selectedVersion]) as mod, id}
+		{#each Object.entries(sortedData[selectedVersion]) as [id, mod]}
 			<div class="listItem">
-				<img alt="Logo of {mod.title}" src={mod.icon_url} class="modIcon">
-				<p>{id + 1}: {mod.title}</p>
+				{#if mod.icon_url !== null}
+					<img alt="Logo of {mod.name}" src={mod.icon_url} class="modIcon">
+				{/if}
+				<p>{id + 1}: {mod.name}</p>
 			</div>
 		{/each}
 	{/if}
@@ -191,7 +195,7 @@
 
 				.logos {
 					width: 100%;
-					overflow: scroll;
+					overflow-x: auto;
 					height: 1em;
 					display: flex;
 					gap: 0.5em;
