@@ -40,31 +40,40 @@
 		projects = collections.filter((el) => {
 			return el.id === selectedCollection;
 		})[0].projects;
+		let projectReq = await fetch("https://api.modrinth.com/v3/projects?ids=" + JSON.stringify(projects), {
+			headers: {
+				'Content-Type': 'application/json',
+				'User-Agent': 'https://github.com/Arbee4ever/arbeeco.de (arbeeco.de)',
+				'Authorization': token
+			}
+		});
+		if (projectReq.status == 200) {
+			projects = await projectReq.json();
+			console.log('projects', projects);
+		}
 		for (let i = 0; i < projects.length; i++) {
+			let project = projects[i];
 			console.log('Processing Project ' + (i + 1));
-			let projectReq = await fetch(`https://api.modrinth.com/v3/project/${projects[i]}`, {
-				headers: {
-					'Content-Type': 'application/json',
-					'User-Agent': 'https://github.com/Arbee4ever/arbeeco.de (arbeeco.de)',
-					'Authorization': token
-				}
-			});
-
-			if (projectReq.status == 200) {
-				let proj = await projectReq.json();
-				for (const projVersion of proj.game_versions) {
-					let versionEl = sortedData.find(({version}) => version === projVersion);
-					if (versionEl !== undefined) {
-						if (versionEl.mods.indexOf(proj) == -1) {
-							versionEl.mods.push(proj);
+			for (const projVersion of project.game_versions) {
+				let versionEl = sortedData.find(({ version }) => version === projVersion);
+				if (versionEl !== undefined) {
+					if (versionEl.mods.indexOf(project) == -1) {
+						let index = projects.indexOf(project.id);
+						if (index != -1) {
+							projects[index] = project;
 						}
-						sortedData = sortedData;
-					} else {
-						sortedData.push({"version": projVersion, "mods": [proj]});
-						sortedData = sortedData.sort((a, b) => {
-							return a.version.localeCompare(b.version, undefined, { numeric: true, sensitivity: 'base' });
-						});
+						versionEl.mods.push(project);
 					}
+					sortedData = sortedData;
+				} else {
+					let index = projects.indexOf(project.id);
+					if (index != -1) {
+						projects[index] = project;
+					}
+					sortedData.push({ 'version': projVersion, 'mods': [project] });
+					sortedData = sortedData.sort((a, b) => {
+						return a.version.localeCompare(b.version, undefined, { numeric: true, sensitivity: 'base' });
+					});
 				}
 			}
 			progressCounter = i + 1;
@@ -101,7 +110,7 @@
 	{/if}
 	{#if sortedData.length !== 0}
 		<div class="list card">
-			{#each sortedData as {version, mods} (version)}
+			{#each sortedData as { version, mods } (version)}
 				<button class="item" on:click={() => selectVersion({version})} on:keyup={() => selectVersion({version})}>
 					<p>{version}</p>
 					<span class="bar" style="--percent: {(mods.length/projects.length)*100}%">
@@ -133,17 +142,35 @@
 	{/if}
 </div>
 
-<dialog class="card" bind:this={modal}>
+<dialog class="card dialog" bind:this={modal}>
 	{selectedVersion}
 	{#if selectedVersion !== undefined && sortedData.length !== 0}
-		{#each sortedData.find(({version}) => version === selectedVersion).mods as mod, i}
-			<div class="listItem">
-				{#if mod.icon_url !== null}
-					<img alt="Logo of {mod.name}" src={mod.icon_url} class="modIcon">
-				{/if}
-				<p>{i + 1}: {mod.name}</p>
+		<div id="modsTable">
+			<div id="mods">
+				<p>Available Mods</p>
+				{#each sortedData.find(({ version }) => version === selectedVersion).mods as mod, i}
+					<a class="listItem" href="https://modrinth.com/{project.project_types[0]}/{project.slug}">
+						{#if mod.icon_url !== null}
+							<img alt="Logo of {mod.name}" src={mod.icon_url} class="modIcon">
+						{/if}
+						<p>{i + 1}: {mod.name}</p>
+					</a>
+				{/each}
 			</div>
-		{/each}
+			<div id="missingMods">
+				<p>Missing Mods</p>
+				{#each projects as project}
+					{#if sortedData.find(({ version }) => version === selectedVersion).mods.find((mod) => project.id === mod.id) === undefined}
+						<a class="listItem" href="https://modrinth.com/{project.project_types[0]}/{project.slug}">
+							{#if project.icon_url !== null}
+								<img alt="Logo of {project.name}" src={project.icon_url} class="modIcon">
+							{/if}
+							<p>{project.name}</p>
+						</a>
+					{/if}
+				{/each}
+			</div>
+		</div>
 	{/if}
 </dialog>
 
@@ -249,17 +276,22 @@
 		color: white;
 		position: fixed;
 
-		.listItem {
+		#modsTable {
 			display: flex;
-			text-align: center;
+			gap: 1vw;
 
-			.modIcon {
-				height: 3vh;
-			}
-
-			p {
+			.listItem {
+				display: flex;
 				text-align: center;
-				margin: 0;
+
+				.modIcon {
+					height: 3vh;
+				}
+
+				p {
+					text-align: center;
+					margin: 0;
+				}
 			}
 		}
 
