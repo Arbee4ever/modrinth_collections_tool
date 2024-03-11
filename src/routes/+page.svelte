@@ -81,6 +81,7 @@
 	}
 
 	function selectVersion(version) {
+		console.log('version', version);
 		selectedVersion = version.version;
 		modal.showModal();
 		modal.addEventListener('click', function(event) {
@@ -149,7 +150,7 @@
 			<div id="mods">
 				<p>Available Mods</p>
 				{#each sortedData.find(({ version }) => version === selectedVersion).mods as mod, i}
-					<a class="listItem" href="https://modrinth.com/{project.project_types[0]}/{project.slug}">
+					<a class="listItem" href="https://modrinth.com/{mod.project_types[0]}/{mod.slug}">
 						{#if mod.icon_url !== null}
 							<img alt="Logo of {mod.name}" src={mod.icon_url} class="modIcon">
 						{/if}
